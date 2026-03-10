@@ -11,6 +11,7 @@ return {
   config = function()
     require('neo-tree').setup {}
     vim.keymap.set('n', '<leader>tt', vim.cmd.Neotree, { desc = 'Neo[t]ree file tree' })
+    vim.keymap.set('n', '<leader>tf', ':Neotree reveal<CR>', { desc = 'Neo[t]ree [f]ind active buffer' })
     -- If you want icons for diagnostic errors, you'll need to define them somewhere:
     vim.fn.sign_define('DiagnosticSignError', { text = ' ', texthl = 'DiagnosticSignError' })
     vim.fn.sign_define('DiagnosticSignWarn', { text = ' ', texthl = 'DiagnosticSignWarn' })
