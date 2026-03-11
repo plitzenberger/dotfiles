@@ -749,13 +749,73 @@ require('lazy').setup({
     lazy = false, -- make sure we load this during startup if it is your main colorscheme
     priority = 1000, -- make sure to load this before all the other start plugins
     config = function()
-      -- Load the colorscheme here.
-      -- Like many other themes, this one has different styles, and you could load
-      -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
-      vim.cmd.colorscheme 'catppuccin-frappe'
+      -- Detect system dark/light mode and set colorscheme accordingly
+      local function is_dark_mode()
+        if vim.fn.has 'mac' == 1 then
+          local handle = io.popen 'defaults read -g AppleInterfaceStyle 2>/dev/null'
+          if handle then
+            local result = handle:read '*a'
+            handle:close()
+            return result:match 'Dark' ~= nil
+          end
+        else
+          -- Linux: check via dbus / freedesktop portal
+          local handle = io.popen 'dbus-send --session --print-reply=literal --dest=org.freedesktop.portal.Desktop /org/freedesktop/portal/desktop org.freedesktop.portal.Settings.Read string:org.freedesktop.appearance string:color-scheme 2>/dev/null'
+          if handle then
+            local result = handle:read '*a'
+            handle:close()
+            -- color-scheme: 1 = prefer dark, 2 = prefer light, 0 = no preference
+            if result:match 'uint32 1' then
+              return true
+            elseif result:match 'uint32 2' then
+              return false
+            end
+          end
+          -- Fallback: check COLORFGBG or assume dark
+          return true
+        end
+        return true
+      end
 
-      -- You can configure highlights by doing something like
+      if is_dark_mode() then
+        vim.o.background = 'dark'
+        vim.cmd.colorscheme 'catppuccin-frappe'
+      else
+        vim.o.background = 'light'
+        vim.cmd.colorscheme 'catppuccin-latte'
+      end
+
       vim.cmd.hi 'Comment gui=none'
+
+      -- Auto-switch on SIGWINCH (some terminals send this on theme change)
+      -- Also provides a user command for manual toggle
+      vim.api.nvim_create_user_command('ToggleBackground', function()
+        if vim.o.background == 'dark' then
+          vim.o.background = 'light'
+          vim.cmd.colorscheme 'catppuccin-latte'
+        else
+          vim.o.background = 'dark'
+          vim.cmd.colorscheme 'catppuccin-frappe'
+        end
+        vim.cmd.hi 'Comment gui=none'
+      end, {})
+
+      -- Re-check system mode when Neovim gains focus
+      vim.api.nvim_create_autocmd('FocusGained', {
+        callback = function()
+          local dark = is_dark_mode()
+          local current = vim.o.background
+          if dark and current ~= 'dark' then
+            vim.o.background = 'dark'
+            vim.cmd.colorscheme 'catppuccin-frappe'
+            vim.cmd.hi 'Comment gui=none'
+          elseif not dark and current ~= 'light' then
+            vim.o.background = 'light'
+            vim.cmd.colorscheme 'catppuccin-latte'
+            vim.cmd.hi 'Comment gui=none'
+          end
+        end,
+      })
     end,
   },
 
