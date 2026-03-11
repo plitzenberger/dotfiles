@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# Launch pi with catppuccin theme matching macOS system appearance
+if defaults read -g AppleInterfaceStyle &>/dev/null; then
+  exec pi --theme catppuccin-frappe "$@"
+else
+  exec pi --theme catppuccin-latte "$@"
+fi
