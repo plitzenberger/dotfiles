@@ -348,7 +348,7 @@ require('lazy').setup({
       -- This opens a window that shows you all of the keymaps for the current
       -- telescope picker. This is really useful to discover what Telescope can
       -- do as well as how to actually do it!
-      local trouble = require 'trouble.providers.telescope'
+      local trouble = require 'trouble.sources.telescope'
       -- [[ Configure Telescope ]]
       -- See `:help telescope` and `:help telescope.setup()`
       require('telescope').setup {
@@ -359,11 +359,11 @@ require('lazy').setup({
           mappings = {
             --    i = { ['<c-enter>'] = 'to_fuzzy_refine' },
             i = {
-              ['<c-t>'] = trouble.open_with_trouble,
+              ['<c-t>'] = trouble.open,
               ['<c-d>'] = require('telescope.actions').delete_buffer,
             },
             n = {
-              ['<c-t>'] = trouble.open_with_trouble,
+              ['<c-t>'] = trouble.open,
               ['<c-d>'] = require('telescope.actions').delete_buffer,
             },
           },
