@@ -280,14 +280,14 @@ require('lazy').setup({
       require('which-key').setup()
 
       -- Document existing key chains
-      require('which-key').register {
-        ['<leader>c'] = { name = '[C]ode', _ = 'which_key_ignore' },
-        ['<leader>d'] = { name = '[D]ocument', _ = 'which_key_ignore' },
-        ['<leader>r'] = { name = '[R]ename', _ = 'which_key_ignore' },
-        ['<leader>s'] = { name = '[S]earch', _ = 'which_key_ignore' },
-        ['<leader>w'] = { name = '[W]orkspace', _ = 'which_key_ignore' },
-        ['<leader>l'] = { name = '[L]LM assistants', _ = 'which_key_ignore' },
-        ['<leader>t'] = { name = '[T]oggle', _ = 'which_key_ignore' },
+      require('which-key').add {
+        { '<leader>c', group = '[C]ode' },
+        { '<leader>d', group = '[D]ocument' },
+        { '<leader>r', group = '[R]ename' },
+        { '<leader>s', group = '[S]earch' },
+        { '<leader>w', group = '[W]orkspace' },
+        { '<leader>l', group = '[L]LM assistants' },
+        { '<leader>t', group = '[T]oggle' },
       }
     end,
   },
@@ -971,8 +971,8 @@ require('lazy').setup({
           },
         },
 
-        require('which-key').register {
-          ['<leader>n'] = { name = '[N]oice', _ = 'which_key_ignore' },
+        require('which-key').add {
+          { '<leader>n', group = '[N]oice' },
         },
         vim.keymap.set('n', '<leader>nl', function()
           require('noice').cmd 'last'
@@ -1016,8 +1016,8 @@ require('lazy').setup({
   {
     'tpope/vim-fugitive',
     config = function()
-      require('which-key').register {
-        ['<leader>g'] = { name = '[G]it', _ = 'which_key_ignore' },
+      require('which-key').add {
+        { '<leader>g', group = '[G]it' },
       }
       vim.keymap.set('n', '<leader>gs', vim.cmd.Git, { desc = '[S]tatus' })
       vim.keymap.set('n', '<leader>gl', ':Git log<CR>', { desc = '[L]og' })
