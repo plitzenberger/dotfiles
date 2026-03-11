@@ -255,6 +255,12 @@ require('lazy').setup({
         topdelete = { text = '‾' },
         changedelete = { text = '~' },
       },
+      on_attach = function(bufnr)
+        local gs = require 'gitsigns'
+        vim.keymap.set('n', '<leader>gs', gs.stage_hunk, { buffer = bufnr, desc = 'Git: Stage hunk' })
+        vim.keymap.set('n', '<leader>gu', gs.undo_stage_hunk, { buffer = bufnr, desc = 'Git: Undo stage hunk' })
+        vim.keymap.set('n', '<leader>gc', '<cmd>Git commit<cr>', { buffer = bufnr, desc = 'Git: Commit' })
+      end,
     },
   },
 
