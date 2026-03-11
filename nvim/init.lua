@@ -396,23 +396,24 @@ require('lazy').setup({
       vim.keymap.set('n', '<leader>sb', ':Telescope file_browser<CR>', { desc = '[B]rowse files' })
       vim.keymap.set('n', '<leader>sp', ':Telescope projects<CR>', { desc = '[B]rowse files' })
 
-      -- Slightly advanced example of overriding default behavior and theme
-      vim.keymap.set('n', '<leader>/', function()
-        -- You can pass additional configuration to telescope to change theme, layout, etc.
+      -- Live grep across all files (like old nix config)
+      vim.keymap.set('n', '<leader>/', builtin.live_grep, { desc = '[/] Live grep' })
+
+      -- Fuzzily search in current buffer
+      vim.keymap.set('n', '<leader>s/', function()
         builtin.current_buffer_fuzzy_find(require('telescope.themes').get_dropdown {
           winblend = 10,
           previewer = false,
         })
-      end, { desc = '[/] Fuzzily search in current buffer' })
+      end, { desc = '[S]earch [/] in current buffer' })
 
-      -- Also possible to pass additional configuration options.
-      --  See `:help telescope.builtin.live_grep()` for information about particular keys
-      vim.keymap.set('n', '<leader>s/', function()
+      -- Live grep in open files only
+      vim.keymap.set('n', '<leader>so', function()
         builtin.live_grep {
           grep_open_files = true,
           prompt_title = 'Live Grep in Open Files',
         }
-      end, { desc = '[S]earch [/] in Open Files' })
+      end, { desc = '[S]earch [O]pen Files' })
 
       -- Shortcut for searching your neovim configuration files
       vim.keymap.set('n', '<leader>sn', function()
