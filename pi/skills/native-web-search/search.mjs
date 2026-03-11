@@ -272,29 +272,15 @@ async function resolveApiKey(provider, auth, authPath, piAi) {
 		throw new Error(`Unsupported credential type for ${provider}: ${String(entry.type || "unknown")}`);
 	}
 
-	if (typeof piAi.getOAuthApiKey !== "function") {
-		throw new Error("Loaded pi-ai module does not export getOAuthApiKey");
+	// Use the OAuth access token directly as the API key
+	const accessToken = entry.access;
+	if (!accessToken) {
+		throw new Error(`No OAuth access token for provider '${provider}' in ${authPath}`);
 	}
-
-	const oauthCreds = {};
-	for (const [k, v] of Object.entries(auth || {})) {
-		if (v && (v.type === "oauth" || (v.access && v.refresh && v.expires))) {
-			oauthCreds[k] = v;
-		}
-	}
-
-	const refreshed = await piAi.getOAuthApiKey(provider, oauthCreds);
-	if (!refreshed) {
-		throw new Error(`No OAuth credentials available for provider '${provider}'`);
-	}
-
-	const mergedCred = { type: "oauth", ...(entry || {}), ...(refreshed.newCredentials || {}) };
-	auth[provider] = mergedCred;
-	writeJson(authPath, auth);
 
 	return {
-		apiKey: refreshed.apiKey,
-		accountId: mergedCred.accountId,
+		apiKey: accessToken,
+		accountId: entry.accountId,
 	};
 }
 
