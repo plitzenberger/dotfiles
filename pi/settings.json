@@ -1,0 +1,23 @@
+{
+  "lastChangelogVersion": "0.57.1",
+  "defaultProvider": "anthropic",
+  "defaultModel": "claude-opus-4-6",
+  "defaultThinkingLevel": "low",
+  "theme": "dark",
+  "terminal": {
+    "showImages": true
+  },
+  "compaction": {
+    "enabled": true
+  },
+  "editorPaddingX": 1,
+  "packages": [
+    "npm:pi-subagents",
+    "npm:pi-web-access",
+    "npm:pi-skill-palette",
+    "npm:pi-powerline-footer",
+    "npm:pi-teams"
+  ],
+  "enableSkillCommands": true,
+  "showHardwareCursor": false
+}
