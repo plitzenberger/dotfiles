@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Launch pi with catppuccin theme matching macOS system appearance
+THEMES_DIR="$HOME/.pi/agent/themes"
 if defaults read -g AppleInterfaceStyle &>/dev/null; then
-  exec pi --theme catppuccin-frappe "$@"
+  exec pi --theme "$THEMES_DIR/catppuccin-frappe.json" "$@"
 else
-  exec pi --theme catppuccin-latte "$@"
+  exec pi --theme "$THEMES_DIR/catppuccin-latte.json" "$@"
 fi
