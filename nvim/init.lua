@@ -1028,6 +1028,7 @@ require('lazy').setup({
       }
       vim.keymap.set('n', '<leader>gs', vim.cmd.Git, { desc = '[S]tatus' })
       vim.keymap.set('n', '<leader>gl', ':Git log<CR>', { desc = '[L]og' })
+      vim.keymap.set('n', '<leader>gp', ':Git push<CR>', { desc = '[P]ush' })
     end,
   },
   {
