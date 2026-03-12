@@ -257,8 +257,8 @@ require('lazy').setup({
       },
       on_attach = function(bufnr)
         local gs = require 'gitsigns'
-        vim.keymap.set('n', '<leader>gs', gs.stage_hunk, { buffer = bufnr, desc = 'Git: Stage hunk' })
-        vim.keymap.set('n', '<leader>gu', gs.undo_stage_hunk, { buffer = bufnr, desc = 'Git: Undo stage hunk' })
+        vim.keymap.set('n', '<leader>hs', gs.stage_hunk, { buffer = bufnr, desc = 'Hunk: [S]tage' })
+        vim.keymap.set('n', '<leader>hu', gs.undo_stage_hunk, { buffer = bufnr, desc = 'Hunk: [U]ndo stage' })
         vim.keymap.set('n', '<leader>gc', '<cmd>Git commit<cr>', { buffer = bufnr, desc = 'Git: Commit' })
       end,
     },
