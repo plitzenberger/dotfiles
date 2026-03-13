@@ -756,6 +756,11 @@ require('lazy').setup({
     lazy = false, -- make sure we load this during startup if it is your main colorscheme
     priority = 1000, -- make sure to load this before all the other start plugins
     config = function()
+      require('catppuccin').setup {
+        integrations = {
+          render_markdown = true,
+        },
+      }
       -- Detect system dark/light mode and set colorscheme accordingly
       local function is_dark_mode()
         if vim.fn.has 'mac' == 1 then

@@ -20,16 +20,7 @@ return {
         'RenderMarkdownH6',
       },
     },
-    on_attach = function(bufnr)
-      -- Subtle heading style: just bold text, no background highlighting
-      local subtle = { bold = true, bg = 'NONE' }
-      vim.api.nvim_set_hl(0, 'RenderMarkdownH1Bg', subtle)
-      vim.api.nvim_set_hl(0, 'RenderMarkdownH2Bg', subtle)
-      vim.api.nvim_set_hl(0, 'RenderMarkdownH3Bg', subtle)
-      vim.api.nvim_set_hl(0, 'RenderMarkdownH4Bg', subtle)
-      vim.api.nvim_set_hl(0, 'RenderMarkdownH5Bg', subtle)
-      vim.api.nvim_set_hl(0, 'RenderMarkdownH6Bg', subtle)
-    end,
+
     code = {
       enabled = true,
       sign = true,
