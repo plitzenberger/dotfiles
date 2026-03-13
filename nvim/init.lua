@@ -954,6 +954,9 @@ require('lazy').setup({
     },
     config = function()
       require('noice').setup {
+        notify = {
+          view = "mini",
+        },
         lsp = {
           -- override markdown rendering so that **cmp** and other plugins use **Treesitter**
           override = {
