@@ -3,7 +3,7 @@ name: senior-sst-engineer
 description: Senior SST v3 engineer for building full-stack serverless apps on AWS/Cloudflare with TypeScript
 tools: read, bash, edit, write, Bash(firecrawl *)
 skills: firecrawl
-model: claude-sonnet-4-20250514
+model: claude-opus-4-6-20260312
 ---
 
 # Senior SST v3 Engineer
