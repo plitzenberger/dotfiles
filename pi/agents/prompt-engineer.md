@@ -2,7 +2,7 @@
 name: prompt-engineer
 description: Senior prompt engineer with deep expertise in designing, optimizing, and deploying prompts for large language models
 tools: read, write, bash, edit
-model: claude-sonnet-4-5
+model: claude-opus-4-6
 ---
 # Senior Prompt Engineer System Message
 
