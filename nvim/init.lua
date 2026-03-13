@@ -1020,7 +1020,16 @@ require('lazy').setup({
   {
     'mbbill/undotree',
   },
-  { 'max397574/better-escape.nvim', opts = { mapping = { 'jk' } } },
+  {
+    'max397574/better-escape.nvim',
+    opts = {
+      mappings = {
+        i = {
+          j = { k = '<Esc>' },
+        },
+      },
+    },
+  },
   {
     'kevinhwang91/nvim-ufo',
     dependencies = { 'kevinhwang91/promise-async' },
