@@ -767,7 +767,8 @@ require('lazy').setup({
           end
         else
           -- Linux: check via dbus / freedesktop portal
-          local handle = io.popen 'dbus-send --session --print-reply=literal --dest=org.freedesktop.portal.Desktop /org/freedesktop/portal/desktop org.freedesktop.portal.Settings.Read string:org.freedesktop.appearance string:color-scheme 2>/dev/null'
+          local handle =
+            io.popen 'dbus-send --session --print-reply=literal --dest=org.freedesktop.portal.Desktop /org/freedesktop/portal/desktop org.freedesktop.portal.Settings.Read string:org.freedesktop.appearance string:color-scheme 2>/dev/null'
           if handle then
             local result = handle:read '*a'
             handle:close()
@@ -955,7 +956,7 @@ require('lazy').setup({
     config = function()
       require('noice').setup {
         notify = {
-          view = "mini",
+          view = 'mini',
         },
         lsp = {
           -- override markdown rendering so that **cmp** and other plugins use **Treesitter**
@@ -1036,6 +1037,7 @@ require('lazy').setup({
   {
     'kevinhwang91/nvim-ufo',
     dependencies = { 'kevinhwang91/promise-async' },
+    event = 'BufRead',
     opts = {
       provider_selector = function()
         return { 'treesitter', 'indent' }
@@ -1046,11 +1048,30 @@ require('lazy').setup({
       vim.o.foldlevel = 99
       vim.o.foldlevelstart = 99
       vim.o.foldenable = true
+      vim.o.foldmethod = 'manual'
     end,
     keys = {
-      { 'zR', function() require('ufo').openAllFolds() end, desc = 'Open all folds' },
-      { 'zM', function() require('ufo').closeAllFolds() end, desc = 'Close all folds' },
-      { 'zK', function() require('ufo').peekFoldedLinesUnderCursor() end, desc = 'Peek fold' },
+      {
+        'zR',
+        function()
+          require('ufo').openAllFolds()
+        end,
+        desc = 'Open all folds',
+      },
+      {
+        'zM',
+        function()
+          require('ufo').closeAllFolds()
+        end,
+        desc = 'Close all folds',
+      },
+      {
+        'zK',
+        function()
+          require('ufo').peekFoldedLinesUnderCursor()
+        end,
+        desc = 'Peek fold',
+      },
     },
   },
   {
