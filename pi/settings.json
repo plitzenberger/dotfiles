@@ -13,7 +13,6 @@
   "editorPaddingX": 1,
   "packages": [
     "npm:pi-subagents",
-    "npm:pi-web-access",
     "npm:pi-skill-palette",
     "npm:pi-powerline-footer",
     "npm:pi-teams"
