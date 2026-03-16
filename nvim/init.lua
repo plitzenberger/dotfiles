@@ -574,6 +574,8 @@ require('lazy').setup({
         -- tsserver = {},
         --
 
+        yamlls = {},
+
         lua_ls = {
           -- cmd = {...},
           -- filetypes { ...},
@@ -877,7 +879,7 @@ require('lazy').setup({
 
       ---@diagnostic disable-next-line: missing-fields
       require('nvim-treesitter.configs').setup {
-        ensure_installed = { 'bash', 'c', 'html', 'lua', 'markdown', 'markdown_inline', 'vim', 'vimdoc' },
+        ensure_installed = { 'bash', 'c', 'html', 'lua', 'markdown', 'markdown_inline', 'vim', 'vimdoc', 'yaml' },
         -- Autoinstall languages that are not installed
         auto_install = true,
         highlight = { enable = true },
