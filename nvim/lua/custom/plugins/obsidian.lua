@@ -11,8 +11,8 @@ return {
   opts = {
     workspaces = {
       {
-        name = 'main',
-        path = vim.env.OBSIDIAN_VAULT or '~/Documents/Obsidian',
+        name = 'self-actualisation',
+        path = '~/Documents/plitzenberger/self-actualisation',
       },
     },
 
@@ -21,7 +21,7 @@ return {
       min_chars = 2,
     },
 
-    new_notes_location = 'current_dir',
+    new_notes_location = '/',
     preferred_link_style = 'wiki',
 
     daily_notes = {
@@ -33,7 +33,7 @@ return {
     },
 
     templates = {
-      folder = 'templates',
+      folder = 'Templates',
       date_format = '%Y-%m-%d',
       time_format = '%H:%M',
     },
