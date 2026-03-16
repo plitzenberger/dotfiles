@@ -294,6 +294,7 @@ require('lazy').setup({
         { '<leader>w', group = '[W]orkspace' },
         { '<leader>l', group = '[L]LM assistants' },
         { '<leader>t', group = '[T]oggle' },
+        { '<leader>o', group = '[O]bsidian' },
       }
     end,
   },
