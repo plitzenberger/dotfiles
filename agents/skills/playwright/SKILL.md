@@ -2,17 +2,12 @@
 name: playwright
 description: |
   Browser automation and E2E testing with Playwright. Two modes:
-  (1) Interactive browser automation via `playwright-cli` — navigate pages, click elements,
-  fill forms, take screenshots, scrape data, manage sessions, mock network requests.
-  (2) E2E test authoring with `@playwright/test` — write .spec.ts files, configure
-  playwright.config.ts, use locators/assertions, fixtures, POM, authentication, CI.
-  Use when the user wants to: automate a browser, interact with web pages, fill forms,
-  take screenshots, scrape websites, extract page data, write E2E tests, debug failing tests,
-  set up Playwright config, create page objects, mock APIs in tests, run visual regression,
-  set up CI for Playwright, or shard tests.
-  Also trigger on: "open a browser", "click this element", "take a screenshot",
-  "write a test", "add e2e tests", "playwright config", "test this page",
-  "page object", "test fixture", ".spec.ts", "playwright-cli".
+  (1) Interactive via `playwright-cli` — navigate, click, fill forms, screenshot, scrape, mock requests.
+  (2) Test authoring with `@playwright/test` — .spec.ts, locators, assertions, fixtures, POM, CI.
+  Trigger on: automate browser, interact with pages, fill forms, take screenshots, scrape websites,
+  write E2E tests, debug tests, Playwright config, page objects, mock APIs, visual regression, shard tests.
+  Also: "open a browser", "click this element", "take a screenshot", "write a test",
+  "add e2e tests", "test this page", ".spec.ts", "playwright-cli".
   Do NOT use for Cypress, Selenium, Puppeteer, or non-Playwright frameworks.
   Do NOT use for general web scraping without browser interaction (use firecrawl instead).
 allowed-tools: Bash(playwright-cli:*), Bash(npx playwright *)
