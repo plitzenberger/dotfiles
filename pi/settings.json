@@ -1,23 +1,37 @@
 {
-  "lastChangelogVersion": "0.57.1",
-  "defaultProvider": "anthropic",
-  "defaultModel": "claude-opus-4-6",
-  "defaultThinkingLevel": "low",
-  "theme": "dark",
-  "terminal": {
-    "showImages": true
-  },
+  "skills": [
+    "~/.agents/skills",
+    "~/Documents/plitzenberger/LifeOS/.agents/skills"
+  ],
+  "extensions": [
+    "~/.pi/agent/extensions/response-profiles",
+    "~/.pi/agent/extensions/project-switcher"
+  ],
   "compaction": {
     "enabled": true
   },
+  "defaultModel": "claude-opus-4-6",
+  "defaultProvider": "anthropic",
+  "defaultThinkingLevel": "medium",
   "editorPaddingX": 1,
+  "enableSkillCommands": true,
+  "hideThinkingBlock": true,
+  "images": {
+    "autoResize": false
+  },
+  "lastChangelogVersion": "0.66.1",
   "packages": [
     "npm:pi-subagents",
     "npm:pi-skill-palette",
     "npm:pi-powerline-footer",
     "npm:pi-teams",
-    "npm:pi-tool-display"
+    "npm:pi-tool-display",
+    "npm:@ollama/pi-web-search",
+    "npm:@benvargas/pi-claude-code-use"
   ],
-  "enableSkillCommands": true,
-  "showHardwareCursor": false
+  "showHardwareCursor": false,
+  "terminal": {
+    "showImages": true
+  },
+  "theme": "light"
 }
