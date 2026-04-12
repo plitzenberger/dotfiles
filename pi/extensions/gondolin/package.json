@@ -1,0 +1,8 @@
+{
+  "name": "pi-ext-gondolin",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@earendil-works/gondolin": "^0.7.0"
+  }
+}
