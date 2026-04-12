@@ -152,8 +152,7 @@ while true; do
 
   output=$(aws ec2 start-instances "${AWS_ARGS[@]}" \
     --instance-ids "$INSTANCE_ID" \
-    --output text 2>&1)
-  rc=$?
+    --output text 2>&1) && rc=0 || rc=$?
 
   if [ $rc -eq 0 ]; then
     echo "✅ START SUCCEEDED!"

@@ -36,7 +36,24 @@ firecrawl search "query" --scrape --limit 3
 
 ## Workflow
 
-Follow this escalation pattern:
+### Step 0: Check Credits (Mandatory)
+
+Before any firecrawl operation, verify you have credits:
+
+```bash
+firecrawl --status
+```
+
+If credits are 0 or insufficient, **stop immediately**. Do NOT attempt scrape/search/crawl calls — they will all fail and waste time. Fall back to:
+- `curl -sL <url> | python3 -c "import sys,re,html; ..."` for basic page scraping
+- Brave Search skill (`brave-search`) for web search
+- GitHub API (`curl -sL https://api.github.com/...`) for repo/org data
+
+> ⚠️ **Never skip the credit check.** A single failed call tells you credits are exhausted, but by then you've already wasted a tool call. Check first, every time.
+
+### Escalation Pattern
+
+Once credits are confirmed, follow this escalation:
 
 1. **Search** - No specific URL yet. Find pages, answer questions, discover sources.
 2. **Scrape** - Have a URL. Extract its content directly.
