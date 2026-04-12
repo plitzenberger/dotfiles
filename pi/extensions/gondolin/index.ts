@@ -2,8 +2,8 @@
  * Gondolin Sandbox Extension
  *
  * Toggle-able sandbox that redirects pi's built-in tools (read/write/edit/bash)
- * into a Gondolin micro-VM. Based on upstream pi-gondolin.ts but wrapped in a
- * `/sandbox` command so sandboxing is opt-in per session.
+ * into a Gondolin micro-VM via event interception — no tool re-registration,
+ * so it's compatible with pi-tool-display and other tool-overriding extensions.
  *
  * Usage:
  *   /sandbox          — toggle on/off
@@ -13,7 +13,7 @@
  *
  * Prerequisites:
  *   - brew install qemu
- *   - npm install -g @earendil-works/gondolin
+ *   - npm install (in this extension directory)
  */
 
 import path from "node:path";
@@ -21,21 +21,15 @@ import path from "node:path";
 import type {
   ExtensionAPI,
   ExtensionContext,
-} from "@mariozechner/pi-coding-agent";
-import {
-  type BashOperations,
-  createBashTool,
-  createEditTool,
-  createReadTool,
-  createWriteTool,
-  type EditOperations,
-  type ReadOperations,
-  type WriteOperations,
+  ToolCallEvent,
+  ToolResultEvent,
 } from "@mariozechner/pi-coding-agent";
 
 import { RealFSProvider, VM } from "@earendil-works/gondolin";
 
 const GUEST_WORKSPACE = "/workspace";
+
+const SANDBOXED_TOOLS = new Set(["bash", "read", "write", "edit"]);
 
 // ── Path helpers ──────────────────────────────────────────────────────
 
@@ -53,73 +47,10 @@ function toGuestPath(localCwd: string, localPath: string): string {
   return path.posix.join(GUEST_WORKSPACE, posixRel);
 }
 
-// ── Gondolin operation factories (from upstream pi-gondolin.ts) ──────
-
-function createGondolinReadOps(vm: VM, localCwd: string): ReadOperations {
-  return {
-    readFile: async (p) => {
-      const guestPath = toGuestPath(localCwd, p);
-      const r = await vm.exec(["/bin/cat", guestPath]);
-      if (!r.ok) throw new Error(`cat failed (${r.exitCode}): ${r.stderr}`);
-      return r.stdoutBuffer;
-    },
-    access: async (p) => {
-      const guestPath = toGuestPath(localCwd, p);
-      const r = await vm.exec([
-        "/bin/sh",
-        "-lc",
-        `test -r ${shQuote(guestPath)}`,
-      ]);
-      if (!r.ok) throw new Error(`not readable: ${p}`);
-    },
-    detectImageMimeType: async (p) => {
-      const guestPath = toGuestPath(localCwd, p);
-      try {
-        const r = await vm.exec([
-          "/bin/sh",
-          "-lc",
-          `file --mime-type -b ${shQuote(guestPath)}`,
-        ]);
-        if (!r.ok) return null;
-        const m = r.stdout.trim();
-        return ["image/jpeg", "image/png", "image/gif", "image/webp"].includes(
-          m,
-        )
-          ? m
-          : null;
-      } catch {
-        return null;
-      }
-    },
-  };
-}
-
-function createGondolinWriteOps(vm: VM, localCwd: string): WriteOperations {
-  return {
-    writeFile: async (p, content) => {
-      const guestPath = toGuestPath(localCwd, p);
-      const dir = path.posix.dirname(guestPath);
-      const b64 = Buffer.from(content, "utf8").toString("base64");
-      const script = [
-        `set -eu`,
-        `mkdir -p ${shQuote(dir)}`,
-        `echo ${shQuote(b64)} | base64 -d > ${shQuote(guestPath)}`,
-      ].join("\n");
-      const r = await vm.exec(["/bin/sh", "-lc", script]);
-      if (!r.ok) throw new Error(`write failed (${r.exitCode}): ${r.stderr}`);
-    },
-    mkdir: async (dir) => {
-      const guestDir = toGuestPath(localCwd, dir);
-      const r = await vm.exec(["/bin/mkdir", "-p", guestDir]);
-      if (!r.ok) throw new Error(`mkdir failed (${r.exitCode}): ${r.stderr}`);
-    },
-  };
-}
-
-function createGondolinEditOps(vm: VM, localCwd: string): EditOperations {
-  const r = createGondolinReadOps(vm, localCwd);
-  const w = createGondolinWriteOps(vm, localCwd);
-  return { readFile: r.readFile, access: r.access, writeFile: w.writeFile };
+function toHostPath(localCwd: string, guestPath: string): string {
+  if (!guestPath.startsWith(GUEST_WORKSPACE)) return guestPath;
+  const rel = guestPath.slice(GUEST_WORKSPACE.length).replace(/^\//, "");
+  return rel ? path.join(localCwd, rel) : localCwd;
 }
 
 function sanitizeEnv(
@@ -133,57 +64,10 @@ function sanitizeEnv(
   return out;
 }
 
-function createGondolinBashOps(vm: VM, localCwd: string): BashOperations {
-  return {
-    exec: async (command, cwd, { onData, signal, timeout, env }) => {
-      const guestCwd = toGuestPath(localCwd, cwd);
-      const ac = new AbortController();
-      const onAbort = () => ac.abort();
-      signal?.addEventListener("abort", onAbort, { once: true });
-
-      let timedOut = false;
-      const timer =
-        timeout && timeout > 0
-          ? setTimeout(() => {
-              timedOut = true;
-              ac.abort();
-            }, timeout * 1000)
-          : undefined;
-
-      try {
-        const proc = vm.exec(["/bin/bash", "-lc", command], {
-          cwd: guestCwd,
-          signal: ac.signal,
-          env: sanitizeEnv(env),
-          stdout: "pipe",
-          stderr: "pipe",
-        });
-        for await (const chunk of proc.output()) {
-          onData(chunk.data);
-        }
-        const r = await proc;
-        return { exitCode: r.exitCode };
-      } catch (err) {
-        if (signal?.aborted) throw new Error("aborted");
-        if (timedOut) throw new Error(`timeout:${timeout}`);
-        throw err;
-      } finally {
-        if (timer) clearTimeout(timer);
-        signal?.removeEventListener("abort", onAbort);
-      }
-    },
-  };
-}
-
 // ── Extension ─────────────────────────────────────────────────────────
 
 export default function (pi: ExtensionAPI) {
   const localCwd = process.cwd();
-
-  const localRead = createReadTool(localCwd);
-  const localWrite = createWriteTool(localCwd);
-  const localEdit = createEditTool(localCwd);
-  const localBash = createBashTool(localCwd);
 
   let sandboxEnabled = false;
   let vm: VM | null = null;
@@ -256,8 +140,7 @@ export default function (pi: ExtensionAPI) {
   // ── /sandbox command ──────────────────────────────────────────────
 
   pi.registerCommand("sandbox", {
-    description:
-      "Toggle Gondolin sandbox (on/off/status)",
+    description: "Toggle Gondolin sandbox (on/off/status)",
     getArgumentCompletions: (prefix: string) => {
       const items = [
         { value: "on", label: "on" },
@@ -302,64 +185,96 @@ export default function (pi: ExtensionAPI) {
     },
   });
 
-  // ── Tool overrides (delegate to VM when sandbox is on) ────────────
+  // ── Event-based tool interception ─────────────────────────────────
+  //
+  // Instead of registerTool (which conflicts with pi-tool-display),
+  // we use tool_call to rewrite paths host→guest before execution,
+  // and user_bash to redirect ! commands.
 
-  pi.registerTool({
-    ...localRead,
-    async execute(id, params, signal, onUpdate, ctx) {
-      if (!sandboxEnabled)
-        return localRead.execute(id, params, signal, onUpdate);
-      const activeVm = await ensureVm(ctx);
-      const tool = createReadTool(localCwd, {
-        operations: createGondolinReadOps(activeVm, localCwd),
-      });
-      return tool.execute(id, params, signal, onUpdate);
-    },
+  // Rewrite host paths → guest paths in tool_call args before execution
+  pi.on("tool_call", async (event: ToolCallEvent, ctx) => {
+    if (!sandboxEnabled || !SANDBOXED_TOOLS.has(event.toolName)) return;
+
+    await ensureVm(ctx);
+
+    if (event.toolName === "bash") {
+      const input = event.input as { command: string; timeout?: number };
+      // Rewrite any references to localCwd in the command
+      input.command = input.command.replaceAll(localCwd, GUEST_WORKSPACE);
+    } else if (
+      event.toolName === "read" ||
+      event.toolName === "write" ||
+      event.toolName === "edit"
+    ) {
+      const input = event.input as { path: string };
+      if (input.path) {
+        const abs = path.isAbsolute(input.path)
+          ? input.path
+          : path.resolve(localCwd, input.path);
+        input.path = toGuestPath(localCwd, abs);
+      }
+    }
   });
 
-  pi.registerTool({
-    ...localWrite,
-    async execute(id, params, signal, onUpdate, ctx) {
-      if (!sandboxEnabled)
-        return localWrite.execute(id, params, signal, onUpdate);
-      const activeVm = await ensureVm(ctx);
-      const tool = createWriteTool(localCwd, {
-        operations: createGondolinWriteOps(activeVm, localCwd),
-      });
-      return tool.execute(id, params, signal, onUpdate);
-    },
-  });
-
-  pi.registerTool({
-    ...localEdit,
-    async execute(id, params, signal, onUpdate, ctx) {
-      if (!sandboxEnabled)
-        return localEdit.execute(id, params, signal, onUpdate);
-      const activeVm = await ensureVm(ctx);
-      const tool = createEditTool(localCwd, {
-        operations: createGondolinEditOps(activeVm, localCwd),
-      });
-      return tool.execute(id, params, signal, onUpdate);
-    },
-  });
-
-  pi.registerTool({
-    ...localBash,
-    async execute(id, params, signal, onUpdate, ctx) {
-      if (!sandboxEnabled)
-        return localBash.execute(id, params, signal, onUpdate);
-      const activeVm = await ensureVm(ctx);
-      const tool = createBashTool(localCwd, {
-        operations: createGondolinBashOps(activeVm, localCwd),
-      });
-      return tool.execute(id, params, signal, onUpdate);
-    },
-  });
-
-  // User `!` commands → VM when sandbox is on
-  pi.on("user_bash", (_event, _ctx) => {
+  // Redirect user `!` commands to VM
+  pi.on("user_bash", async (_event, ctx) => {
     if (!sandboxEnabled || !vm) return;
-    return { operations: createGondolinBashOps(vm, localCwd) };
+
+    return {
+      operations: {
+        exec: async (
+          command: string,
+          cwd: string,
+          {
+            onData,
+            signal,
+            timeout,
+            env,
+          }: {
+            onData: (data: string) => void;
+            signal?: AbortSignal;
+            timeout?: number;
+            env?: NodeJS.ProcessEnv;
+          },
+        ) => {
+          const guestCwd = toGuestPath(localCwd, cwd);
+          const ac = new AbortController();
+          const onAbort = () => ac.abort();
+          signal?.addEventListener("abort", onAbort, { once: true });
+
+          let timedOut = false;
+          const timer =
+            timeout && timeout > 0
+              ? setTimeout(() => {
+                  timedOut = true;
+                  ac.abort();
+                }, timeout * 1000)
+              : undefined;
+
+          try {
+            const proc = vm!.exec(["/bin/bash", "-lc", command], {
+              cwd: guestCwd,
+              signal: ac.signal,
+              env: sanitizeEnv(env),
+              stdout: "pipe",
+              stderr: "pipe",
+            });
+            for await (const chunk of proc.output()) {
+              onData(chunk.data);
+            }
+            const r = await proc;
+            return { exitCode: r.exitCode };
+          } catch (err) {
+            if (signal?.aborted) throw new Error("aborted");
+            if (timedOut) throw new Error(`timeout:${timeout}`);
+            throw err;
+          } finally {
+            if (timer) clearTimeout(timer);
+            signal?.removeEventListener("abort", onAbort);
+          }
+        },
+      },
+    };
   });
 
   // Patch system prompt CWD when sandbox is active
