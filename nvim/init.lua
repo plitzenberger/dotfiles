@@ -1,3 +1,12 @@
+-- Silence deprecated vim.lsp.buf_get_clients() — plugins still use it
+vim.lsp.buf_get_clients = function(bufnr)
+  local result = {}
+  for _, client in ipairs(vim.lsp.get_clients({ bufnr = vim.api.nvim_resolve_bufnr and vim.api.nvim_resolve_bufnr(bufnr) or bufnr })) do
+    result[client.id] = client
+  end
+  return result
+end
+
 --[[
 
 =====================================================================
@@ -1008,6 +1017,7 @@ require('lazy').setup({
             view = 'notify',
             filter = { event = 'msg_showmode' },
           },
+
         },
 
         require('which-key').add {

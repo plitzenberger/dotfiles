@@ -11,8 +11,8 @@ return {
   opts = {
     workspaces = {
       {
-        name = 'self-actualisation',
-        path = '~/Documents/plitzenberger/self-actualisation',
+        name = 'LifeOS',
+        path = '~/Documents/plitzenberger/LifeOS',
       },
     },
 

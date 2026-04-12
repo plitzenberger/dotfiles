@@ -2,6 +2,7 @@
 
 return {
   'jackMort/ChatGPT.nvim',
+  enabled = false,
   event = 'VeryLazy',
   config = function()
     vim.keymap.set('n', '<leader>lc', vim.cmd.ChatGPT, { desc = '[C]hatGPT' })
